@@ -60,7 +60,7 @@ FDG-PET/CT + Clinical Data
 - **Goal:** Predict each patient's recurrence-free survival (RFS) risk score using PET/CT images, clinical variables, and (optionally) the predicted TN stage from Subtask 2.
 - **Output:** A continuous risk score per patient (higher = higher risk)
 - **Metric:** Concordance index (C-index)
-- **Baseline model:** ResNet18 feature extractor + BaggedIcareSurvival ensemble
+- **Baseline model:** Cox proportional hazards models
 - **Weight in final ranking:** 0.40
 
 ---
