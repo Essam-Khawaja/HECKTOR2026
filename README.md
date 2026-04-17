@@ -28,7 +28,7 @@ Head and Neck (H&N) malignancies constitute a major oncological burden globally,
 
 Following the success of previous HECKTOR editions (2020–2025), the **2026 edition introduces a unified, end-to-end pipeline** that jointly addresses segmentation, TN staging, and prognosis for head and neck cancer patients. Unlike prior editions where tasks were treated independently, this framework models the dependency between tasks, closely reflecting real-world clinical decision-making and aligning with the MICCAI 2026 theme of **clinical translation**.
 
-The challenge will be presented at [MICCAI 2026](TBA). The dataset comprises approximately **1,423 patient cases** from 11+ centers across Canada, Europe, the USA, and the UAE.
+The challenge will be presented at [MICCAI 2026](https://hecktor26.grand-challenge.org). The dataset comprises approximately **1,423 patient cases** from 11+ centers across Canada, Europe, the USA, and the UAE.
 
 ---
 
@@ -97,7 +97,7 @@ The final ranking uses a weighted scheme across subtasks:
 
 # 📥 Getting the Data
 
-1. **Download:** Go to the [Dataset Section](TBA) on the challenge website and follow the instructions to download the dataset.
+1. **Download:** Go to the [Data Download Section](https://hecktor26.grand-challenge.org/data-download/) on the challenge website and follow the instructions to download the dataset.
 
 2. **Dataset Structure:** All three subtasks share the same dataset. Each patient folder contains a CT scan, a PET scan, and a segmentation label file. A single CSV provides all clinical data and outcome labels.
 
