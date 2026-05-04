@@ -1,7 +1,7 @@
 # HECKTOR2026 - Challenge
 
 <p align="center">
-  <img src="HECKTOR-main.jpeg">
+  <img src="HECKTOR_2026_Banner.png">
 </p>
 
 Welcome to the **HECKTOR 2026 Challenge** repository! This repository contains instructions and examples for creating a baseline and a valid Docker container for the [HECKTOR 2026 Challenge](TBA). It will also help you understand how to submit your designed model to [Grand Challenge](https://grand-challenge.org/) for evaluation. Here you'll find everything you need to get started quickly: from understanding the challenge, to setting up your environment, training your first model, and evaluating your results. This repository has **two primary branches**:
