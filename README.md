@@ -6,7 +6,7 @@
 
 Welcome to the **HECKTOR 2026 Challenge** repository! This repository contains instructions and examples for creating a baseline and a valid Docker container for the [HECKTOR 2026 Challenge](TBA). It will also help you understand how to submit your designed model to [Grand Challenge](https://grand-challenge.org/) for evaluation. Here you'll find everything you need to get started quickly: from understanding the challenge, to setting up your environment, training your first model, and evaluating your results. This repository has **two primary branches**:
 
-- [**main**](https://github.com/BioMedIA-MBZUAI/HECKTOR2026/tree/main): Step-by-step guides, data loaders, training scripts, and inference examples so you can get a working model up and running quickly.
+- [**main**](https://github.com/BioMedIA-MBZUAI/HECKTOR2026/tree/main): Step-by-step guides, data loaders, and training scripts so you can get a working model up and running quickly.
 
 - [**docker-template**](https://github.com/BioMedIA-MBZUAI/HECKTOR2026/tree/docker-template): Designed for containerizing and submitting your final models to Grand Challenge. This branch provides a Docker-based inference template, build/test/save scripts, and enforces all challenge restrictions.
 
@@ -90,8 +90,7 @@ The final ranking uses a weighted scheme across subtasks:
 2. [Task Folder & Structure](#-task-folder--structure)
 3. [Environment Setup](#️-environment-setup)
 4. [Training Your Model](#-training-your-model)
-5. [Inference & Evaluation](#-inference--evaluation)
-6. [Next Steps & Tips](#-next-steps--tips)
+5. [Next Steps & Tips](#-next-steps--tips)
 
 ---
 
@@ -155,15 +154,13 @@ Task/
 │   ├── data/                   # Dataset and dataloader
 │   ├── evaluation/             # Evaluation utilities
 │   ├── models/                 # Model architectures (UNet3D, SegResNet, UNETR, SwinUNETR)
-│   ├── scripts/                # train.py and inference.py
+│   ├── scripts/                # train.py
 │   ├── utils/                  # Shared helpers
 │   └── README.md               # Subtask-specific documentation
 ├── TNStaging/                  # Subtask 2: TN staging classification
-│   ├── tn_staging.py           # Training script
-│   └── tn_staging_inference.py # Inference script
+│   └── tn_staging.py           # Training script
 └── Prognosis/                  # Subtask 3: RFS prognosis
-    ├── prognosis.py            # Training script
-    └── prognosis_inference.py  # Inference script
+    └── prognosis.py            # Training script
 ```
 
 > **Baseline Notice:** This structure and the sample scripts are provided as a **baseline** to help you get started. You are **not required** to follow this exact layout or use the provided models.
@@ -215,42 +212,6 @@ python tn_staging.py
 ```bash
 cd Task/Prognosis/
 python prognosis.py
-```
-
----
-
-# 🔍 Inference & Evaluation
-
-Run inference for each subtask using the commands below. The outputs from Subtask 1 and 2 can be passed as inputs to downstream subtasks.
-
-#### Subtask 1 — Segmentation
-```bash
-cd Task/Segmentation/
-python scripts/inference.py \
-    --model_path best_model.pth \
-    --ct_path /path/to/ct.nii.gz \
-    --pet_path /path/to/pet.nii.gz \
-    --output_path /path/to/output
-```
-
-#### Subtask 2 — TN Staging
-```bash
-cd Task/TNStaging/
-python tn_staging_inference.py \
-    --csv test_data.csv \
-    --images_dir ./test_images \
-    --checkpoint best_model.pt \
-    --output_path /path/to/output.csv
-```
-
-#### Subtask 3 — Prognosis
-```bash
-cd Task/Prognosis/
-python prognosis_inference.py \
-    --csv test_data.csv \
-    --input_path ./test_images \
-    --ensemble ensemble_model.pt \
-    --clinical_preprocessors hecktor_cache_clinical_preprocessors.pkl
 ```
 
 ---

@@ -1,8 +1,0 @@
-{
-    "segmentation": "images/tumor-lymph-node-segmentation/output.mha",
-    "tn-staging": {
-        "T_stage": "T2",
-        "N_stage": "N2"
-    },
-    "recurrence-free-survival": -0.42
-}
