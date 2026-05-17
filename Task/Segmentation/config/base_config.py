@@ -11,8 +11,8 @@ class BaseConfig:
     
     # Data paths
     data_root: str = "/path/to/hecktor2026_training"
-    train_images_dir: str = "imagesTr_resampled_cropped_npy"
-    train_labels_dir: str = "labelsTr_resampled_cropped_npy"
+    train_images_dir: str = "imagesTr"
+    train_labels_dir: str = "labelsTr"
     splits_file: str = "config/splits_final.json"
     
     # Data properties
