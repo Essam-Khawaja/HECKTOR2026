@@ -159,9 +159,9 @@ def convert_patient_data(root_folder, target_folder, mapping_file=None, single_p
             print(f"✗ PET-CT folder not found for {patient_folder}")
 
 if __name__ == "__main__":
-    root_folder = "/Users/numansaeed/Downloads/final_data/anonymized_data/new_patients/anonymized_DICOM"
-    target_folder = "/Users/numansaeed/Downloads/final_data/anonymized_data/new_patients/SUV_NIFTI_CORRECTED"
-    mapping_file = "MDA_new_case_mapping.csv"
+    root_folder = "your-path"
+    target_folder = "your-path"
+    mapping_file = "your-path"
 
     # Always rename first
     rename_folders(root_folder, mapping_file)
