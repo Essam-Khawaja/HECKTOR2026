@@ -21,25 +21,16 @@ def get_dataloaders(config, fold: int = 0) -> Tuple[DataLoader, DataLoader]:
     val_ids   = splits[fold]['val']
     print(f"Using fold {fold}: {len(train_ids)} training cases, {len(val_ids)} validation cases")
 
-    images_dir = os.path.join(config.data_root, config.train_images_dir)
-    labels_dir = os.path.join(config.data_root, config.train_labels_dir)
+    def case_files(case_id: str) -> Dict[str, str]:
+        case_dir = os.path.join(config.data_root, case_id)
+        return {
+            "ct": os.path.join(case_dir, f"{case_id}__CT.nii.gz"),
+            "pet": os.path.join(case_dir, f"{case_id}__PT.nii.gz"),
+            "label": os.path.join(case_dir, f"{case_id}.nii.gz"),
+        }
 
-    train_files = [
-        {
-            "ct":    os.path.join(images_dir, f"{case_id}__CT.nii.gz"),
-            "pet":   os.path.join(images_dir, f"{case_id}__PT.nii.gz"),
-            "label": os.path.join(labels_dir, f"{case_id}.nii.gz"),
-        }
-        for case_id in train_ids
-    ]
-    val_files = [
-        {
-            "ct":    os.path.join(images_dir, f"{case_id}__CT.nii.gz"),
-            "pet":   os.path.join(images_dir, f"{case_id}__PT.nii.gz"),
-            "label": os.path.join(labels_dir, f"{case_id}.nii.gz"),
-        }
-        for case_id in val_ids
-    ]
+    train_files = [case_files(case_id) for case_id in train_ids]
+    val_files = [case_files(case_id) for case_id in val_ids]
 
     train_transforms = get_train_transforms(config)
     print(f"Creating CacheDataset for training with cache_rate={config.cache_rate}...")

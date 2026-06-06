@@ -9,10 +9,8 @@ from typing import Tuple
 class BaseConfig:
     """Base configuration class with common parameters."""
     
-    # Data paths
+    # Data paths — per-patient folders: {data_root}/{PatientID}/{PatientID}__CT.nii.gz etc.
     data_root: str = "/path/to/hecktor2026_training"
-    train_images_dir: str = "imagesTr"
-    train_labels_dir: str = "labelsTr"
     splits_file: str = "config/splits_final.json"
     
     # Data properties
