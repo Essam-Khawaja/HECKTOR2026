@@ -5,12 +5,50 @@ from dataclasses import dataclass
 from typing import Tuple
 
 
+def _repo_root() -> str:
+    """Return the repository root from this config file."""
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
+
+def _segmentation_root() -> str:
+    """Return the segmentation task root."""
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+
+def default_data_root() -> str:
+    """Resolve the default HECKTOR training data path.
+
+    Priority:
+    1. HECKTOR_DATA_ROOT environment variable.
+    2. The ARC home-level data folder: ../../"HECKTOR 2026 Training Data".
+    3. A sibling folder named "HECKTOR 2026 Training Data".
+    4. The challenge-style folder inside the repo, if present.
+    """
+    env_data_root = os.environ.get("HECKTOR_DATA_ROOT")
+    if env_data_root:
+        return os.path.abspath(os.path.expanduser(env_data_root))
+
+    repo_root = _repo_root()
+    candidates = [
+        os.path.join(os.path.dirname(os.path.dirname(repo_root)), "HECKTOR 2026 Training Data"),
+        os.path.join(os.path.dirname(repo_root), "HECKTOR 2026 Training Data"),
+        os.path.join(repo_root, "HECKTOR 2026 Training Data"),
+        os.path.join(repo_root, "hecktor2026_training"),
+    ]
+
+    for candidate in candidates:
+        if os.path.isdir(candidate):
+            return candidate
+
+    return candidates[0]
+
+
 @dataclass
 class BaseConfig:
     """Base configuration class with common parameters."""
     
-    # Data paths — per-patient folders: {data_root}/{PatientID}/{PatientID}__CT.nii.gz etc.
-    data_root: str = "/path/to/hecktor2026_training"
+    # Data paths - per-patient folders: {data_root}/{PatientID}/{PatientID}__CT.nii.gz etc.
+    data_root: str = ""
     splits_file: str = "config/splits_final.json"
     
     # Data properties
@@ -54,6 +92,18 @@ class BaseConfig:
     fold: int = 0
     
     def __post_init__(self):
+        """Setup output directories with fold-specific structure."""
+        if not self.data_root:
+            self.data_root = default_data_root()
+        else:
+            self.data_root = os.path.abspath(os.path.expanduser(self.data_root))
+
+        if not os.path.isabs(self.splits_file):
+            self.splits_file = os.path.join(_segmentation_root(), self.splits_file)
+
+        self.setup_output_dirs()
+
+    def setup_output_dirs(self):
         """Setup output directories with fold-specific structure."""
         # Create fold-specific directory structure
         self.experiment_dir = os.path.join(self.output_dir, self.experiment_name)

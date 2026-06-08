@@ -113,11 +113,54 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train HECKTOR segmentation model")
     parser.add_argument("--config", type=str, default="unet3d", choices=["unet3d", "segresnet", "unetr", "swinunetr"], help="Model configuration to use")
     parser.add_argument("--fold", type=int, default=0, help="Cross-validation fold to use (0-4)")
+    parser.add_argument("--data-root", type=str, default=None, help="Path to HECKTOR training data. Defaults to HECKTOR_DATA_ROOT or ../../'HECKTOR 2026 Training Data'.")
+    parser.add_argument("--output-dir", type=str, default=None, help="Directory for experiment outputs")
+    parser.add_argument("--epochs", type=int, default=None, help="Override number of training epochs")
+    parser.add_argument("--batch-size", type=int, default=None, help="Override batch size")
+    parser.add_argument("--num-workers", type=int, default=None, help="Override dataloader worker count")
+    parser.add_argument("--cache-rate", type=float, default=None, help="Override MONAI CacheDataset cache rate")
     parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint to resume from")
     parser.add_argument("--device", type=str, help="Override device from config (e.g., 'cpu', 'cuda')")
     parser.add_argument("--cuda-device", type=int, default=0, help="CUDA device index")
     
     return parser.parse_args()
+
+
+def validate_data_root(config, fold):
+    """Fail early if the configured data root does not match expected HECKTOR files."""
+    if not os.path.isdir(config.data_root):
+        raise FileNotFoundError(
+            f"Data root not found: {config.data_root}\n"
+            "Set HECKTOR_DATA_ROOT or pass --data-root. On ARC this is likely:\n"
+            "\"../../HECKTOR 2026 Training Data\" from the repository root."
+        )
+
+    if not os.path.exists(config.splits_file):
+        raise FileNotFoundError(f"Splits file not found: {config.splits_file}")
+
+    import json
+
+    with open(config.splits_file, "r") as f:
+        splits = json.load(f)
+
+    if fold >= len(splits):
+        raise ValueError(f"Fold {fold} is out of range for {config.splits_file}")
+
+    first_case = splits[fold]["train"][0]
+    case_dir = os.path.join(config.data_root, first_case)
+    expected_files = [
+        os.path.join(case_dir, f"{first_case}__CT.nii.gz"),
+        os.path.join(case_dir, f"{first_case}__PT.nii.gz"),
+        os.path.join(case_dir, f"{first_case}.nii.gz"),
+    ]
+    missing = [path for path in expected_files if not os.path.exists(path)]
+    if missing:
+        raise FileNotFoundError(
+            "Configured data root exists, but expected HECKTOR files are missing.\n"
+            f"Data root: {config.data_root}\n"
+            f"Checked case: {first_case}\n"
+            "Missing:\n  " + "\n  ".join(missing)
+        )
 
 
 def main():
@@ -136,10 +179,26 @@ def main():
         config = SwinUNETRConfig(fold=args.fold)
     else:
         raise ValueError(f"Unknown config: {args.config}")
+
+    if args.data_root:
+        config.data_root = os.path.abspath(os.path.expanduser(args.data_root))
+    if args.output_dir:
+        config.output_dir = args.output_dir
+    if args.epochs is not None:
+        config.num_epochs = args.epochs
+    if args.batch_size is not None:
+        config.batch_size = args.batch_size
+    if args.num_workers is not None:
+        config.num_workers = args.num_workers
+    if args.cache_rate is not None:
+        config.cache_rate = args.cache_rate
+    config.setup_output_dirs()
     
     # Override device if specified
     if args.device:
         config.device = args.device
+
+    validate_data_root(config, args.fold)
     
     # Setup logging
     logger = setup_logging(config.log_dir)

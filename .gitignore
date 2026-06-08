@@ -28,9 +28,15 @@ Task1/experiments/
 __pycache__/
 *.pyc
 *.pyo
+venv/
+.venv/
 .DS_Store
 .vscode/
 .idea/
+
+# Local HECKTOR training data folders
+HECKTOR 2026 Training Data/
+hecktor2026_training/
 
 # TensorBoard logs
 tensorboard_logs/

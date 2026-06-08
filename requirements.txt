@@ -7,6 +7,8 @@ monai>=1.5.0
 nibabel>=5.0.0
 SimpleITK>=2.3.0
 scikit-image>=0.22.0
+pydicom>=3.0.0
+dicom2nifti>=2.5.0
 
 # Model architectures
 timm>=1.0.0
