@@ -49,15 +49,27 @@ Use a fresh Linux virtual environment on ARC. Do not reuse a venv copied from yo
 ```bash
 cd /home/syedessamuddin.khawa/EssamProjects/HECKTOR2026
 rm -rf venv
-python3 -m venv venv
+
+module avail python
+module load python/3.11
+
+python --version
+python -c "import ctypes; print('ctypes ok')"
+python -m venv venv
 source venv/bin/activate
+python -m ensurepip --upgrade
 python -m pip install --upgrade pip setuptools wheel
+python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 python -m pip install -r requirements.txt
 ```
+
+Use Python 3.10, 3.11, or 3.12. Avoid Python 3.6 because PyTorch 2.x will not install. Avoid Python 3.14 on ARC if `import ctypes` fails with `_ctypes` missing.
+Install a PyTorch CUDA 12.x build on ARC. CUDA 13 wheels may install successfully but fail at runtime if the cluster GPU driver is older.
 
 Verify the key packages:
 
 ```bash
+python -m pip --version
 python -c "import torch, monai, nibabel, SimpleITK; print('torch', torch.__version__); print('cuda available:', torch.cuda.is_available()); print('monai', monai.__version__)"
 ```
 

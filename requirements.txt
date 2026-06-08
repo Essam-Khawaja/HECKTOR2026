@@ -1,6 +1,7 @@
 # Core deep learning
-torch>=2.6.0
-torchvision>=0.21.0
+# ARC's current NVIDIA driver supports CUDA 12.x, so avoid newer CUDA 13 wheels.
+torch>=2.6.0,<2.12.0
+torchvision>=0.21.0,<0.27.0
 
 # Medical imaging
 monai>=1.5.0

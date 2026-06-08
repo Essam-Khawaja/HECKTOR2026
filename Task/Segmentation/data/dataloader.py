@@ -45,9 +45,9 @@ def get_dataloaders(config, fold: int = 0) -> Tuple[DataLoader, DataLoader]:
         batch_size=config.batch_size,
         shuffle=True,
         num_workers=config.num_workers,
-        pin_memory=True,
+        pin_memory=config.pin_memory,
         drop_last=True,
-        persistent_workers=True,
+        persistent_workers=config.num_workers > 0,
     )
 
     val_transforms = get_validation_transforms()
@@ -57,7 +57,8 @@ def get_dataloaders(config, fold: int = 0) -> Tuple[DataLoader, DataLoader]:
         batch_size=config.batch_size,
         shuffle=False,
         num_workers=config.num_workers,
-        persistent_workers=True,
+        pin_memory=config.pin_memory,
+        persistent_workers=config.num_workers > 0,
     )
 
     return train_loader, val_loader

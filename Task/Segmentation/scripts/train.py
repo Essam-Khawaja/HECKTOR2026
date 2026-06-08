@@ -213,6 +213,7 @@ def main():
         logger.info(f"Using {device}: {torch.cuda.get_device_name(device)}")
     else:
         device = torch.device("cpu")
+        config.pin_memory = False
         if config.device == "cuda":
             logger.warning("CUDA not available, falling back to CPU.")
         logger.info(f"Using device: {device}")
@@ -242,8 +243,7 @@ def main():
     scheduler = optim.lr_scheduler.PolynomialLR(
         optimizer,
         total_iters=config.num_epochs,
-        power=config.poly_lr_power,
-        verbose=False
+        power=config.poly_lr_power
     )
     writer = SummaryWriter(config.log_dir) if config.use_tensorboard else None
     
