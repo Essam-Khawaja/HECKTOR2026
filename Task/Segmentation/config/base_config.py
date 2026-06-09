@@ -73,6 +73,7 @@ class BaseConfig:
     rotation_range: float = 15.0
     scaling_range: float = 0.1
     translation_range: float = 10.0
+    crop_num_samples: int = 3
     
     # System parameters
     device: str = "cuda"
