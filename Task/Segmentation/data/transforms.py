@@ -45,7 +45,7 @@ def get_train_transforms(config):
             spatial_size=config.spatial_size,
             ratios=[0.1, 0.45, 0.45],
             num_classes=3,
-            num_samples=3,
+            num_samples=config.crop_num_samples,
             allow_missing_keys=True,
             warn=False,
         ),

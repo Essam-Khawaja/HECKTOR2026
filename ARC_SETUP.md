@@ -135,8 +135,13 @@ python Task/Segmentation/scripts/train.py \
   --device cuda \
   --epochs 1 \
   --batch-size 1 \
-  --num-workers 4 \
-  --cache-rate 0
+  --num-workers 0 \
+  --cache-rate 0 \
+  --crop-num-samples 1 \
+  --max-train-batches 2 \
+  --skip-validation \
+  --no-tensorboard \
+  --no-checkpoint
 ```
 
 Exit the allocation when finished:

@@ -26,7 +26,7 @@ from utils.logging import setup_logging
 ## REF 1: Create a single, efficient evaluation function.
 ## This function calculates loss and metrics in ONE pass over the data,
 ## removing the major inefficiency of iterating through the validation set twice.
-def evaluate_epoch(model, loader, criterion, dice_metric, device, config, use_sliding_window=False):
+def evaluate_epoch(model, loader, criterion, dice_metric, device, config, use_sliding_window=False, max_batches=None):
     """
     Run evaluation for one epoch, calculating loss and Dice metric.
     """
@@ -42,7 +42,10 @@ def evaluate_epoch(model, loader, criterion, dice_metric, device, config, use_sl
     post_pred = AsDiscrete(argmax=True, to_onehot=config.num_classes)
     
     with torch.no_grad():
-        for batch in loader:
+        num_batches = 0
+        for batch_idx, batch in enumerate(loader):
+            if max_batches is not None and batch_idx >= max_batches:
+                break
             images, labels = batch["image"].to(device), batch["label"].to(device)
             
             # Use sliding window inference if specified
@@ -75,8 +78,9 @@ def evaluate_epoch(model, loader, criterion, dice_metric, device, config, use_sl
             
             # Update the dice metric
             dice_metric(y_pred=outputs_convert, y=labels_convert)
+            num_batches += 1
 
-    avg_loss = total_loss / len(loader)
+    avg_loss = total_loss / max(num_batches, 1)
     # Aggregate the metric over all batches
     avg_dice = dice_metric.aggregate().item()
     # Reset the metric for the next epoch
@@ -85,12 +89,15 @@ def evaluate_epoch(model, loader, criterion, dice_metric, device, config, use_sl
     return avg_loss, avg_dice
 
 
-def train_epoch(model, train_loader, criterion, optimizer, device):
+def train_epoch(model, train_loader, criterion, optimizer, device, max_batches=None):
     """Train for one epoch."""
     model.train()
     total_loss = 0.0
     
-    for batch in tqdm(train_loader, desc='Training', leave=False):
+    num_batches = 0
+    for batch_idx, batch in enumerate(tqdm(train_loader, desc='Training', leave=False)):
+        if max_batches is not None and batch_idx >= max_batches:
+            break
         images, labels = batch["image"].to(device), batch["label"].to(device)
         
         optimizer.zero_grad()
@@ -100,8 +107,9 @@ def train_epoch(model, train_loader, criterion, optimizer, device):
         optimizer.step()
         
         total_loss += loss.item()
+        num_batches += 1
         
-    avg_loss = total_loss / len(train_loader)
+    avg_loss = total_loss / max(num_batches, 1)
     
     ## REF 2: Removed expensive Dice calculation on the training set.
     ## This speeds up training significantly. We only care about the training loss.
@@ -119,6 +127,12 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=None, help="Override batch size")
     parser.add_argument("--num-workers", type=int, default=None, help="Override dataloader worker count")
     parser.add_argument("--cache-rate", type=float, default=None, help="Override MONAI CacheDataset cache rate")
+    parser.add_argument("--crop-num-samples", type=int, default=None, help="Override number of random crops sampled per training case")
+    parser.add_argument("--max-train-batches", type=int, default=None, help="Stop each training epoch after this many batches")
+    parser.add_argument("--max-val-batches", type=int, default=None, help="Stop validation after this many batches")
+    parser.add_argument("--skip-validation", action="store_true", help="Skip validation entirely")
+    parser.add_argument("--no-tensorboard", action="store_true", help="Disable TensorBoard logging")
+    parser.add_argument("--no-checkpoint", action="store_true", help="Disable checkpoint saving")
     parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint to resume from")
     parser.add_argument("--device", type=str, help="Override device from config (e.g., 'cpu', 'cuda')")
     parser.add_argument("--cuda-device", type=int, default=0, help="CUDA device index")
@@ -192,6 +206,12 @@ def main():
         config.num_workers = args.num_workers
     if args.cache_rate is not None:
         config.cache_rate = args.cache_rate
+    if args.crop_num_samples is not None:
+        config.crop_num_samples = args.crop_num_samples
+    if args.no_tensorboard:
+        config.use_tensorboard = False
+    if args.no_checkpoint:
+        config.save_checkpoint_every = 0
     config.setup_output_dirs()
     
     # Override device if specified
@@ -265,7 +285,7 @@ def main():
         logger.info(f"Epoch {epoch}/{config.num_epochs}")
         
         # Train for one epoch and log the loss
-        train_loss = train_epoch(model, train_loader, criterion, optimizer, device)
+        train_loss = train_epoch(model, train_loader, criterion, optimizer, device, max_batches=args.max_train_batches)
         logger.info(f"Train - Loss: {train_loss:.4f}")
         
         # Log training loss to TensorBoard every epoch
@@ -275,12 +295,12 @@ def main():
         # --- Validation ---
         ## REF 6: Simplified and cleaned up the validation and logging logic.
         val_loss, val_dice = 0.0, 0.0
-        should_validate = (epoch + 1) % 5 == 0 or (epoch + 1) == config.num_epochs
+        should_validate = not args.skip_validation and ((epoch + 1) % 5 == 0 or (epoch + 1) == config.num_epochs)
 
         if should_validate:
             logger.info("Running validation with sliding window inference...")
             val_loss, val_dice = evaluate_epoch(
-                model, val_loader, criterion, dice_metric, device, config, use_sliding_window=True
+                model, val_loader, criterion, dice_metric, device, config, use_sliding_window=True, max_batches=args.max_val_batches
             )
             logger.info(f"Val   - Loss: {val_loss:.4f}, Dice: {val_dice:.4f}")
             
@@ -311,7 +331,7 @@ def main():
         if config.save_checkpoint_every > 0:
             should_save_checkpoint = (epoch + 1) % config.save_checkpoint_every == 0
         
-        if should_save_checkpoint or (epoch + 1) == config.num_epochs:
+        if not args.no_checkpoint and (should_save_checkpoint or (epoch + 1) == config.num_epochs):
             last_model_path = os.path.join(config.checkpoint_dir, "last_model.pth")
             model.save_checkpoint(last_model_path, epoch, optimizer.state_dict(), best_dice=best_val_dice)
             logger.info(f"Saved last model checkpoint at epoch {epoch}")
