@@ -48,8 +48,8 @@ class BaseConfig:
     """Base configuration class with common parameters."""
     
     # Data paths - per-patient folders: {data_root}/{PatientID}/{PatientID}__CT.nii.gz etc.
-    data_root: str = ""
-    splits_file: str = "config/splits_final.json"
+    data_root: str = "/home/syedessamuddin.khawa/HECKTOR 2026 Training Data"
+    splits_file: str = "config/splits_overfit.json"
     
     # Data properties
     input_channels: int = 2  # CT + PET
@@ -57,10 +57,10 @@ class BaseConfig:
     spatial_size: Tuple[int, int, int] = (128, 128, 128)
     
     # Training parameters
-    batch_size: int = 2
-    learning_rate: float = 1e-2
+    batch_size: int = 1
+    learning_rate: float = 1e-4
     weight_decay: float = 3e-5
-    num_epochs: int = 350
+    num_epochs: int = 1
     
     # Scheduler parameters
     # PolyLR scheduler parameters
@@ -73,19 +73,19 @@ class BaseConfig:
     rotation_range: float = 15.0
     scaling_range: float = 0.1
     translation_range: float = 10.0
-    crop_num_samples: int = 3
+    crop_num_samples: int = 1
     
     # System parameters
     device: str = "cuda"
-    num_workers: int = 4
-    pin_memory: bool = True
+    num_workers: int = 0
+    pin_memory: bool = False
     
     # Data caching parameters
-    cache_rate: float = 0.25  # Cache 25% of training data for faster loading
+    cache_rate: float = 0.0  # Cache 25% of training data for faster loading
     
     # Checkpointing and logging
     save_checkpoint_every: int = 1 # Save checkpoint every n epochs
-    use_tensorboard: bool = True
+    use_tensorboard: bool = False
     
     # Output directories
     experiment_name: str = "baseline"
